@@ -1,10 +1,20 @@
 
+name: 'Terraform Infra Apply'
 
-deploy:
+on:
+  pull_request:
+    branches: [ "main" ]
+    paths: ["infratfcode/**"]
+
+permissions:
+  contents: read
+
+jobs:    
+ deploy:
     name: Terraform Deploy
-    needs: plan
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-20.04
+    environment: production
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js 14.x
@@ -17,10 +27,14 @@ deploy:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
-      - name: Initialise project and deploy terraform
+      - name: Terraform Init
         run: |
-          cd terraform
-          cd qa
-          terraform fmt
-          terraform init
-          terraform apply -var='example_api_key=${{ secrets.EXAMPLE_API_KEY }}' --auto-approve=true
+            cd terraform
+            cd qa
+            terraform fmt
+            terraform init
+      - name: Terraform Plan 
+        run: terraform plan -input=false   
+      - name: Initialise project and deploy terraform
+      #  needs: Terraform Plan
+        run: terraform apply --auto-approve=true
