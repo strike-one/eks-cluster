@@ -15,6 +15,7 @@ terraform {
 
   resource "null_resource" "example" {
         triggers = {
+        default = "default"
         value = "A example resource that does nothing!"
        }
 }
